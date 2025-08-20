@@ -1,3 +1,4 @@
+// src/app/api/gt-price/route.ts
 import { NextResponse } from "next/server";
 
 const NETWORK = "ronin";
@@ -8,17 +9,48 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const url = `https://api.geckoterminal.com/api/v2/networks/${NETWORK}/pools/${POOL}`;
-    const res = await fetch(url, { headers: { accept: "application/json" }, cache: "no-store" });
-    if (!res.ok) return NextResponse.json({ error: `Upstream ${res.status}` }, { status: 502 });
+    const res = await fetch(url, {
+      headers: { accept: "application/json" },
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      return NextResponse.json({ error: `Upstream ${res.status}` }, { status: 502 });
+    }
 
-    const attrs = (await res.json())?.data?.attributes ?? {};
-    const name: string = attrs?.name ?? "";
-    const [left, right] = name.split("/").map((s: string) => s.trim().replace(/^\$?/, "").toUpperCase());
+    // 安全に JSON をパース（any を使わない）
+    const raw: unknown = await res.json();
+    if (raw === null || typeof raw !== "object") {
+      return NextResponse.json({ error: "Invalid response" }, { status: 502 });
+    }
+    const data = (raw as Record<string, unknown>)["data"] as
+      | Record<string, unknown>
+      | undefined;
+    const attrs = data?.["attributes"] as Record<string, unknown> | undefined;
 
-    const baseUsd = parseFloat(attrs?.base_token_price_usd ?? "");
-    const quoteUsd = parseFloat(attrs?.quote_token_price_usd ?? "");
+    const name =
+      typeof attrs?.["name"] === "string" ? (attrs["name"] as string) : "";
+    const [left, right] = name
+      .split("/")
+      .map((s) => s.trim().replace(/^\$?/, "").toUpperCase());
 
-    // どちら側が COIN / WRON かを name から判定し、USD価格を決める
+    const baseVal = attrs?.["base_token_price_usd"];
+    const quoteVal = attrs?.["quote_token_price_usd"];
+
+    const baseUsd =
+      typeof baseVal === "number"
+        ? baseVal
+        : typeof baseVal === "string"
+        ? parseFloat(baseVal)
+        : NaN;
+
+    const quoteUsd =
+      typeof quoteVal === "number"
+        ? quoteVal
+        : typeof quoteVal === "string"
+        ? parseFloat(quoteVal)
+        : NaN;
+
+    // どちら側が COIN / WRON かを name から判定してUSD価格を確定
     let coinUsd: number | null = null;
     let wronUsd: number | null = null;
     if (left === "COIN") {
@@ -28,17 +60,18 @@ export async function GET() {
       coinUsd = quoteUsd;
       wronUsd = baseUsd;
     } else {
-      // フォールバック（万一 name が想定外ならベース/クオートから推測）
-      coinUsd = baseUsd || quoteUsd || null;
-      wronUsd = quoteUsd || baseUsd || null;
+      // フォールバック
+      coinUsd = Number.isFinite(baseUsd) ? baseUsd : Number.isFinite(quoteUsd) ? quoteUsd : null;
+      wronUsd = Number.isFinite(quoteUsd) ? quoteUsd : Number.isFinite(baseUsd) ? baseUsd : null;
     }
 
-    if (!Number.isFinite(coinUsd) || !Number.isFinite(wronUsd)) {
-      return NextResponse.json({ error: "Price fields not found" }, { status: 500 });
+    if (!Number.isFinite(coinUsd ?? NaN) || !Number.isFinite(wronUsd ?? NaN)) {
+      return NextResponse.json({ error: "Price fields not found" }, { status: 502 });
     }
 
     // WRON/COIN = (USD/COIN) / (USD/WRON)
-    const wronPerCoin = coinUsd! / wronUsd!;
+    const wronPerCoin = (coinUsd as number) / (wronUsd as number);
+
     return NextResponse.json(
       {
         coinUsd,
@@ -47,7 +80,8 @@ export async function GET() {
       },
       { headers: { "Cache-Control": "no-store" } }
     );
-  } catch (e: any) {
-    return NextResponse.json({ error: e?.message ?? "Unknown error" }, { status: 500 });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

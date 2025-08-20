@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 type PriceResp = {
@@ -18,12 +18,21 @@ function Arrow({ t }: { t: Trend }) {
   return <span style={{ color, fontWeight: 700, marginRight: 6 }}>{glyph}</span>;
 }
 
+/** Suspense で包む外側コンポーネント（ルール対応） */
 export default function WidgetPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 12, color: "#9ca3af" }}>Loading…</div>}>
+      <WidgetInner />
+    </Suspense>
+  );
+}
+
+/** 実本体（ここで useSearchParams を使う） */
+function WidgetInner() {
   const [data, setData] = useState<PriceResp | null>(null);
   const [usdTrend, setUsdTrend] = useState<Trend>("flat");
   const [wronTrend, setWronTrend] = useState<Trend>("flat");
 
-  // 直前値（初回は null）
   const prevUsd = useRef<number | null>(null);
   const prevWron = useRef<number | null>(null);
   const timerId = useRef<number | null>(null);
@@ -69,6 +78,10 @@ export default function WidgetPage() {
   const wronText =
     data ? `${data.wronPerCoin.toLocaleString(undefined, { minimumFractionDigits: 8, maximumFractionDigits: 8 })} WRON` : "—";
 
+  // 閾値：0.0007超 or 0.0005未満で赤文字
+  const alertWRON =
+    data && (data.wronPerCoin > 0.0007 || data.wronPerCoin < 0.0005);
+
   return (
     <div
       style={{
@@ -100,36 +113,28 @@ export default function WidgetPage() {
       </div>
 
       {/* WRON 行 */}
-<div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    background: "#121523",
-    borderRadius: 10,
-    padding: "8px 10px"
-  }}
->
-  <div style={{ fontSize: fontBase - 2, opacity: 0.7, lineHeight: 1.1 }}>
-    WRON /<br /> COIN
-  </div>
-  <div
-    style={{
-      fontSize: fontBase + 4,
-      fontWeight: 700,
-      display: "flex",
-      alignItems: "center",
-      color:
-        data && (data.wronPerCoin > 0.0007 || data.wronPerCoin < 0.0005)
-          ? "red"
-          : "white",
-    }}
-  >
-    <Arrow t={wronTrend} />
-    {wronText}
-  </div>
-</div>
-
+      <div
+        style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          background: "#121523", borderRadius: 10, padding: "8px 10px"
+        }}
+      >
+        <div style={{ fontSize: fontBase - 2, opacity: 0.7, lineHeight: 1.1 }}>
+          WRON /<br /> COIN
+        </div>
+        <div
+          style={{
+            fontSize: fontBase + 4,
+            fontWeight: 700,
+            display: "flex",
+            alignItems: "center",
+            color: alertWRON ? "red" : "white",
+          }}
+        >
+          <Arrow t={wronTrend} />
+          {wronText}
+        </div>
+      </div>
 
       <div style={{ fontSize: 10, opacity: 0.55, marginTop: 6 }}>
         Updated: {data ? new Date(data.updatedAt).toLocaleTimeString() : "—"} · 1m
