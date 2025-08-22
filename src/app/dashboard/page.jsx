@@ -9,21 +9,27 @@ const API = (poolId) =>
 //   GeckoTerminalで該当プールを開き、URLの /pools/ の後ろをコピペ
 const POOLS = [
   {
-    id: "0xda021b3d91f82bf2bcfc1a8709545c3a643d47de", // ← これはCOIN/WRON（そのままでOK）
+    id: "0xda021b3d91f82bf2bcfc1a8709545c3a643d47de", // COIN / WRON
     label: "COIN / WRON",
     note: "CraftWorld COIN プール",
   },
   {
-    id: "0x93171ecace2f6b8be8dd09539f55fabe7f805af1", // ← RICE/Ronke (V3)
+    id: "0x93171ecace2f6b8be8dd09539f55fabe7f805af1", // RICE / Ronke
     label: "RICE / Ronke (Katana V3)",
     note: "Ronke Rice Farmers",
   },
   {
-    id: "0x75ae353997242927c701d4d6c2722ebef43fd2d3", // ← RONKE/WRON（通常プール）
+    id: "0x75ae353997242927c701d4d6c2722ebef43fd2d3", // RONKE / WRON
     label: "RONKE / WRON (Katana)",
     note: "Ronke Token",
   },
+  {
+    id: "0x2ecb08f87f075b5769fe543d0e52e40140575ea7", // RON / USDC
+    label: "RON / USDC (Katana V3)",
+    note: "Ronin Stable Pool",
+  },
 ];
+
 
 
 function usePool(poolId) {
