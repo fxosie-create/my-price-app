@@ -2,67 +2,87 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 const NETWORK = "ronin";
-const API = (poolId: string) =>
+const API = (poolId) =>
   `https://api.geckoterminal.com/api/v2/networks/${NETWORK}/pools/${poolId}`;
 
+// ★ RICE・RONKE のプールIDを入れてください
+//   GeckoTerminalで該当プールを開き、URLの /pools/ の後ろをコピペ
 const POOLS = [
   {
-    id: "0xda021b3d91f82bf2bcfc1a8709545c3a643d47de", // COIN / WRON
+    id: "0xda021b3d91f82bf2bcfc1a8709545c3a643d47de", // ← これはCOIN/WRON（そのままでOK）
     label: "COIN / WRON",
     note: "CraftWorld COIN プール",
   },
   {
-    id: "0x93171ecace2f6b8be8dd09539f55fabe7f805af1", // RICE / Ronke (V3)
+    id: "0x93171ecace2f6b8be8dd09539f55fabe7f805af1", // ← RICE/Ronke (V3)
     label: "RICE / Ronke (Katana V3)",
     note: "Ronke Rice Farmers",
   },
   {
-    id: "0x75ae353997242927c701d4d6c2722ebef43fd2d3", // RONKE / WRON
+    id: "0x75ae353997242927c701d4d6c2722ebef43fd2d3", // ← RONKE/WRON（通常プール）
     label: "RONKE / WRON (Katana)",
     note: "Ronke Token",
   },
 ];
 
-function usePool(poolId: string) {
-  const [raw, setRaw] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
+
+function usePool(poolId) {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let alive = true;
-    async function run() {
+    let isMounted = true;
+
+    async function fetchData() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(API(poolId), { headers: { accept: "application/json" }, cache: "no-store" });
+        const res = await fetch(API(poolId), {
+          headers: { accept: "application/json" },
+          cache: "no-store",
+        });
         if (!res.ok) throw new Error(`Upstream ${res.status}`);
         const json = await res.json();
-        if (alive) setRaw(json?.data?.attributes ?? null);
-      } catch (e: any) {
-        if (alive) setError(e.message ?? String(e));
+        if (isMounted) setData(json?.data?.attributes ?? null);
+      } catch (e) {
+        if (isMounted) setError(e.message || String(e));
       } finally {
-        if (alive) setLoading(false);
+        if (isMounted) setLoading(false);
       }
     }
-    run();
-    const t = setInterval(run, 30_000);
-    return () => { alive = false; clearInterval(t); };
+
+    fetchData();
+    const t = setInterval(fetchData, 30_000);
+    return () => {
+      isMounted = false;
+      clearInterval(t);
+    };
   }, [poolId]);
 
-  const data = useMemo(() => {
-    if (!raw) return null;
-    const priceUsd = Number(raw.base_token_price_usd ?? raw.price_usd ?? raw.quote_token_price_usd ?? 0);
-    const pc24h = Number(raw.price_change_percentage_24h ?? 0);
-    const volume24 = Number(raw.volume_usd?.h24 ?? raw.volume_usd_24h ?? 0);
-    const liquidity = Number(raw.reserve_in_usd ?? raw.liquidity_usd ?? 0);
-    return { priceUsd, pc24h, volume24, liquidity };
-  }, [raw]);
+  const parsed = useMemo(() => {
+    if (!data) return null;
+    const name = data?.name ?? "";
+    const priceUsd = Number(
+      data?.base_token_price_usd ??
+        data?.price_usd ??
+        data?.quote_token_price_usd ??
+        0
+    );
+    const pc24h = Number(data?.price_change_percentage_24h ?? 0);
+    const volume24 = Number(data?.volume_usd?.h24 ?? data?.volume_usd_24h ?? 0);
+    const liquidity = Number(
+      data?.reserve_in_usd ?? data?.liquidity_usd ?? 0
+    );
+    return { name, priceUsd, pc24h, volume24, liquidity };
+  }, [data]);
 
-  return { loading, error, data };
+  return { loading, error, data: parsed };
 }
 
-function Card({ title, note, poolId }: { title: string; note?: string; poolId: string }) {
+function Card({ title, note, poolId }) {
   const { loading, error, data } = usePool(poolId);
+
   return (
     <div className="rounded-2xl shadow-md p-4 border">
       <div className="flex items-center justify-between">
@@ -93,17 +113,21 @@ function Card({ title, note, poolId }: { title: string; note?: string; poolId: s
             </div>
             <div>
               <p className="opacity-60">24h Volume</p>
-              <p className="font-medium">{`$${data.volume24.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}</p>
+              <p className="font-medium">
+                {`$${data.volume24.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
+              </p>
             </div>
             <div>
               <p className="opacity-60">Liquidity (TVL)</p>
-              <p className="font-medium">{`$${data.liquidity.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}</p>
+              <p className="font-medium">
+                {`$${data.liquidity.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
+              </p>
             </div>
           </div>
         )}
       </div>
 
-      <div className="mt-4 flex items-center justify-end">
+      <div className="mt-4 flex items-center justify-end gap-2">
         <a
           href={`https://www.geckoterminal.com/${NETWORK}/pools/${poolId}`}
           target="_blank"
@@ -131,4 +155,3 @@ export default function Page() {
     </div>
   );
 }
-
