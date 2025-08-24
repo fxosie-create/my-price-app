@@ -67,21 +67,38 @@ function usePool(poolId) {
   }, [poolId]);
 
   const parsed = useMemo(() => {
-    if (!data) return null;
-    const name = data?.name ?? "";
-    const priceUsd = Number(
-      data?.base_token_price_usd ??
-        data?.price_usd ??
-        data?.quote_token_price_usd ??
-        0
+  if (!data) return null;
+
+  // 価格（どれかに入っている）
+  const priceUsd = Number(
+    data?.base_token_price_usd ??
+      data?.price_usd ??
+      data?.quote_token_price_usd ??
+      0
+  );
+
+  // 24h変化率：エンドポイントによりキーが違うのでフォールバックで吸収
+  const pc24h = (() => {
+    const pick = (v) => (v == null ? null : parseFloat(String(v)));
+    return (
+      pick(data?.price_change_percentage_24h) ??
+      pick(data?.price_change_percentage?.h24) ??
+      pick(data?.price_change?.h24) ??
+      pick(data?.price_change_24h) ??
+      0
     );
-    const pc24h = Number(data?.price_change_percentage_24h ?? 0);
-    const volume24 = Number(data?.volume_usd?.h24 ?? data?.volume_usd_24h ?? 0);
-    const liquidity = Number(
-      data?.reserve_in_usd ?? data?.liquidity_usd ?? 0
-    );
-    return { name, priceUsd, pc24h, volume24, liquidity };
-  }, [data]);
+  })();
+
+  // 24h出来高（h24 か 24h のどちらか）
+  const volume24 = Number(data?.volume_usd?.h24 ?? data?.volume_usd_24h ?? 0);
+
+  // 流動性（どちらかに入っている）
+  const liquidity = Number(data?.reserve_in_usd ?? data?.liquidity_usd ?? 0);
+
+  return { priceUsd, pc24h, volume24, liquidity };
+}, [data]);
+
+
 
   return { loading, error, data: parsed };
 }
