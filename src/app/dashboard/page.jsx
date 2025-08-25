@@ -28,9 +28,9 @@ const POOLS = [
     label: "RON / USDC (Katana V3)",
     note: "Ronin Stable Pool",
   },
-{ id: "0x279e8e892edbd7bf3d7b9eedc2f482d88e4cc9ef", label: "RONEN / WRON (Katana V3)", note: "Ronen Token" },
-  { id: "0xf2d876342243a7dd20f1ebabf3ed9e4e7ebc5f78",   label: "PVR / WRON (Katana V3)",   note: "PlanetVerse (PVR)" },
-  { id: "0x1a89ecd466a23e98f07111b0510a2d6c1cd5e400",label: "BANANA / WRON (Katana V3)",note: "Banana Token" },
+{ id: "0x6bfa5c1219a4b5c98bc4e961825b969197666404", label: "RONEN / WRON (Katana V3)", note: "Ronen Token" },
+  { id: "0xefcc723b111cb0fb86e6b9ef8070e637ef9429d7",   label: "PVR / WRON (Katana V3)",   note: "PlanetVerse (PVR)" },
+  { id: "0xa682364784397b3b21737dcc69d4f1930b592c8f",label: "BANANA / WRON (Katana V3)",note: "Banana Token" },
 
 ];
 
