@@ -10,7 +10,7 @@ const API = (poolId) =>
 const POOLS = [
   {
     id: "0xda021b3d91f82bf2bcfc1a8709545c3a643d47de", // COIN / WRON
-    label: "COIN / WRON",
+    label: "COIN / WRON (Katana V3)",
     note: "CraftWorld COIN プール",
   },
   {
