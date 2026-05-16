@@ -19,7 +19,50 @@
       <section class="board-wrap">
         <canvas id="game" width="960" height="640" aria-label="dungeon game"></canvas>
         <div id="titleScreen" class="title-screen">
+          <h1>Deep Dungeon</h1><!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Deep Dungeon</title>
+    <link rel="stylesheet" href="/deep-dungeon/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar" aria-label="status">
+        <div><span>Floor</span><strong id="floor">1F</strong></div>
+        <div><span>HP</span><strong id="hp">24/24</strong></div>
+        <div><span>ATK</span><strong id="atk">5</strong></div>
+        <div><span>Gold</span><strong id="gold">0</strong></div>
+        <div><span>Best</span><strong id="best">1F</strong></div>
+      </section>
+
+      <section class="board-wrap">
+        <canvas id="game" width="960" height="640" aria-label="dungeon game"></canvas>
+        <div id="titleScreen" class="title-screen">
           <h1>Deep Dungeon</h1>
+          <p>Startを押すと冒険開始。敵を倒し、宝箱を拾い、階段から深く潜ります。</p>
+          <button id="start">Start</button>
+        </div>
+      </section>
+
+      <section class="bottom">
+        <div id="log" class="log" aria-live="polite"></div>
+        <div class="actions" aria-label="controls">
+          <button data-dir="up">↑</button>
+          <button data-dir="left">←</button>
+          <button data-dir="down">↓</button>
+          <button data-dir="right">→</button>
+          <button id="wait">Wait</button>
+          <button id="restart">Restart</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="/deep-dungeon/game.js"></script>
+  </body>
+</html>
+
           <p>Startを押すと冒険開始。敵を倒し、宝箱を拾い、階段から深く潜ります。</p>
           <button id="start">Start</button>
         </div>
