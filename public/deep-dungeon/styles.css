@@ -1,0 +1,206 @@
+:root {
+  color-scheme: dark;
+  --bg: #101114;
+  --panel: #1b1f26;
+  --panel-2: #252b34;
+  --line: rgba(255, 255, 255, 0.11);
+  --text: #f5f0e7;
+  --muted: #aeb7c3;
+  --gold: #f2c14e;
+  --green: #4bc489;
+  --red: #ef6f6c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(75, 196, 137, 0.14), transparent 26rem),
+    linear-gradient(140deg, #15171b, #0d0f12 74%);
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.shell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  width: min(100vw, 1180px);
+  height: 100dvh;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.topbar > div,
+.log,
+.actions button {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(27, 31, 38, 0.92);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+.topbar > div {
+  min-width: 0;
+  padding: 10px 12px;
+}
+
+.topbar span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.topbar strong {
+  display: block;
+  margin-top: 2px;
+  font-size: clamp(18px, 3vw, 28px);
+  line-height: 1;
+}
+
+.board-wrap {
+  position: relative;
+  min-height: 360px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #08090a;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.3);
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+.title-screen {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+  background: rgba(9, 10, 12, 0.76);
+  backdrop-filter: blur(2px);
+}
+
+.title-screen.hidden {
+  display: none;
+}
+
+h1 {
+  margin: 0;
+  color: var(--gold);
+  font-size: clamp(42px, 8vw, 86px);
+  line-height: 0.95;
+}
+
+p {
+  max-width: 560px;
+  margin: 0 auto;
+  color: #d8dee6;
+  font-size: 16px;
+}
+
+.bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.log {
+  min-height: 78px;
+  max-height: 104px;
+  overflow: hidden;
+  padding: 9px 12px;
+  color: #dce3ea;
+  font-size: 14px;
+  line-height: 1.42;
+}
+
+.log div:first-child {
+  color: var(--gold);
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(3, 52px);
+  grid-template-rows: repeat(2, 38px);
+  gap: 6px;
+}
+
+.actions button,
+#start {
+  color: var(--text);
+  cursor: pointer;
+  font: 800 15px/1 "Segoe UI", system-ui, sans-serif;
+}
+
+.actions button {
+  min-width: 52px;
+}
+
+.actions button:hover,
+#start:hover {
+  transform: translateY(-1px);
+  background: var(--panel-2);
+}
+
+#start {
+  justify-self: center;
+  min-width: 148px;
+  min-height: 48px;
+  border: 1px solid rgba(242, 193, 78, 0.55);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #67501b, #302817);
+}
+
+#restart {
+  grid-column: span 2;
+}
+
+#wait {
+  color: var(--green);
+}
+
+@media (max-width: 760px) {
+  .shell {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .topbar {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .bottom {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    grid-template-columns: repeat(6, minmax(42px, 1fr));
+    grid-template-rows: 44px;
+  }
+
+  #restart {
+    grid-column: auto;
+  }
+}
